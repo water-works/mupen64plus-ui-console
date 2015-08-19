@@ -216,6 +216,7 @@ static m64p_error OpenConfigurationHandles(void)
     (*ConfigSetDefaultString)(l_ConfigUI, "AudioPlugin", "mupen64plus-audio-sdl" OSAL_DLL_EXTENSION, "Filename of audio plugin");
     (*ConfigSetDefaultString)(l_ConfigUI, "InputPlugin", "mupen64plus-input-sdl" OSAL_DLL_EXTENSION, "Filename of input plugin");
     (*ConfigSetDefaultString)(l_ConfigUI, "RspPlugin", "mupen64plus-rsp-hle" OSAL_DLL_EXTENSION, "Filename of RSP plugin");
+    (*ConfigSetDefaultString)(l_ConfigUI, "NetplayPlugin", "mupen64plus-netplay" OSAL_DLL_EXTENSION, "Filename of Netplay plugin");
 
     if (bSaveConfig && ConfigSaveSection != NULL) /* ConfigSaveSection was added in Config API v2.1.0 */
         (*ConfigSaveSection)("UI-Console");
@@ -240,6 +241,8 @@ static m64p_error SaveConfigurationOptions(void)
         (*ConfigSetParameter)(l_ConfigUI, "InputPlugin", M64TYPE_STRING, g_InputPlugin);
     if (g_RspPlugin != NULL)
         (*ConfigSetParameter)(l_ConfigUI, "RspPlugin", M64TYPE_STRING, g_RspPlugin);
+    if (g_NetplayPlugin != NULL)
+        (*ConfigSetParameter)(l_ConfigUI, "NetplayPlugin", M64TYPE_STRING, g_NetplayPlugin);
 
     return (*ConfigSaveFile)();
 }
@@ -253,40 +256,41 @@ static void printUsage(const char *progname)
     printf("Usage: %s [parameters] [romfile]\n"
            "\n"
            "Parameters:\n"
-           "    --noosd                : disable onscreen display\n"
-           "    --osd                  : enable onscreen display\n"
-           "    --fullscreen           : use fullscreen display mode\n"
-           "    --windowed             : use windowed display mode\n"
-           "    --resolution (res)     : display resolution (640x480, 800x600, 1024x768, etc)\n"
-           "    --nospeedlimit         : disable core speed limiter (should be used with dummy audio plugin)\n"
-           "    --cheats (cheat-spec)  : enable or list cheat codes for the given rom file\n"
-           "    --corelib (filepath)   : use core library (filepath) (can be only filename or full path)\n"
-           "    --configdir (dir)      : force configation directory to (dir); should contain mupen64plus.cfg\n"
-           "    --datadir (dir)        : search for shared data files (.ini files, languages, etc) in (dir)\n"
-           "    --plugindir (dir)      : search for plugins in (dir)\n"
-           "    --sshotdir (dir)       : set screenshot directory to (dir)\n"
-           "    --gfx (plugin-spec)    : use gfx plugin given by (plugin-spec)\n"
-           "    --audio (plugin-spec)  : use audio plugin given by (plugin-spec)\n"
-           "    --input (plugin-spec)  : use input plugin given by (plugin-spec)\n"
-           "    --rsp (plugin-spec)    : use rsp plugin given by (plugin-spec)\n"
-           "    --emumode (mode)       : set emu mode to: 0=Pure Interpreter 1=Interpreter 2=DynaRec\n"
-           "    --savestate (filepath) : savestate loaded at startup\n"
-           "    --testshots (list)     : take screenshots at frames given in comma-separated (list), then quit\n"
-           "    --set (param-spec)     : set a configuration variable, format: ParamSection[ParamName]=Value\n"
-           "    --core-compare-send    : use the Core Comparison debugging feature, in data sending mode\n"
-           "    --core-compare-recv    : use the Core Comparison debugging feature, in data receiving mode\n"
-           "    --nosaveoptions        : do not save the given command-line options in configuration file\n"
-           "    --verbose              : print lots of information\n"
-           "    --help                 : see this help message\n\n"
+           "    --noosd                 : disable onscreen display\n"
+           "    --osd                   : enable onscreen display\n"
+           "    --fullscreen            : use fullscreen display mode\n"
+           "    --windowed              : use windowed display mode\n"
+           "    --resolution (res)      : display resolution (640x480, 800x600, 1024x768, etc)\n"
+           "    --nospeedlimit          : disable core speed limiter (should be used with dummy audio plugin)\n"
+           "    --cheats (cheat-spec)   : enable or list cheat codes for the given rom file\n"
+           "    --corelib (filepath)    : use core library (filepath) (can be only filename or full path)\n"
+           "    --configdir (dir)       : force configation directory to (dir); should contain mupen64plus.cfg\n"
+           "    --datadir (dir)         : search for shared data files (.ini files, languages, etc) in (dir)\n"
+           "    --plugindir (dir)       : search for plugins in (dir)\n"
+           "    --sshotdir (dir)        : set screenshot directory to (dir)\n"
+           "    --gfx (plugin-spec)     : use gfx plugin given by (plugin-spec)\n"
+           "    --audio (plugin-spec)   : use audio plugin given by (plugin-spec)\n"
+           "    --input (plugin-spec)   : use input plugin given by (plugin-spec)\n"
+           "    --rsp (plugin-spec)     : use rsp plugin given by (plugin-spec)\n"
+           "    --netplay (plugin-spec) : use netplay plugin given by (plugin-spec)\n"
+           "    --emumode (mode)        : set emu mode to: 0=Pure Interpreter 1=Interpreter 2=DynaRec\n"
+           "    --savestate (filepath)  : savestate loaded at startup\n"
+           "    --testshots (list)      : take screenshots at frames given in comma-separated (list), then quit\n"
+           "    --set (param-spec)      : set a configuration variable, format: ParamSection[ParamName]=Value\n"
+           "    --core-compare-send     : use the Core Comparison debugging feature, in data sending mode\n"
+           "    --core-compare-recv     : use the Core Comparison debugging feature, in data receiving mode\n"
+           "    --nosaveoptions         : do not save the given command-line options in configuration file\n"
+           "    --verbose               : print lots of information\n"
+           "    --help                  : see this help message\n\n"
            "(plugin-spec):\n"
-           "    (pluginname)           : filename (without path) of plugin to find in plugin directory\n"
-           "    (pluginpath)           : full path and filename of plugin\n"
-           "    'dummy'                : use dummy plugin\n\n"
+           "    (pluginname)            : filename (without path) of plugin to find in plugin directory\n"
+           "    (pluginpath)            : full path and filename of plugin\n"
+           "    'dummy'                 : use dummy plugin\n\n"
            "(cheat-spec):\n"
-           "    'list'                 : show all of the available cheat codes\n"
-           "    'all'                  : enable all of the available cheat codes\n"
-           "    (codelist)             : a comma-separated list of cheat code numbers to enable,\n"
-           "                             with dashes to use code variables (ex 1-2 to use cheat 1 option 2)\n"
+           "    'list'                  : show all of the available cheat codes\n"
+           "    'all'                   : enable all of the available cheat codes\n"
+           "    (codelist)              : a comma-separated list of cheat code numbers to enable,\n"
+           "                              with dashes to use code variables (ex 1-2 to use cheat 1 option 2)\n"
            "\n", progname);
 
     return;
@@ -543,6 +547,11 @@ static m64p_error ParseCommandLineFinal(int argc, const char **argv)
             g_RspPlugin = argv[i+1];
             i++;
         }
+        else if (strcmp(argv[i], "--netplay") == 0 && ArgsLeft >= 1)
+        {
+            g_NetplayPlugin = argv[i+1];
+            i++;
+        }
         else if (strcmp(argv[i], "--emumode") == 0 && ArgsLeft >= 1)
         {
             int emumode = atoi(argv[i+1]);
@@ -757,7 +766,7 @@ int main(int argc, char *argv[])
     }
 
     /* attach plugins to core */
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < 5; i++)
     {
         if ((*CoreAttachPlugin)(g_PluginMap[i].type, g_PluginMap[i].handle) != M64ERR_SUCCESS)
         {
@@ -782,7 +791,7 @@ int main(int argc, char *argv[])
     (*CoreDoCommand)(M64CMD_EXECUTE, 0, NULL);
 
     /* detach plugins from core and unload them */
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < 5; i++)
         (*CoreDetachPlugin)(g_PluginMap[i].type);
     PluginUnload();
 

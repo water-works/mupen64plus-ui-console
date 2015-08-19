@@ -39,11 +39,13 @@ const char *g_GfxPlugin = NULL;        // pointer to graphics plugin specified a
 const char *g_AudioPlugin = NULL;      // pointer to audio plugin specified at commandline (if any)
 const char *g_InputPlugin = NULL;      // pointer to input plugin specified at commandline (if any)
 const char *g_RspPlugin = NULL;        // pointer to rsp plugin specified at commandline (if any)
+const char *g_NetplayPlugin = NULL;    // pointer to netplay plugin specified at commandline (if any)
 
-plugin_map_node g_PluginMap[] = {{M64PLUGIN_GFX,   "Video", NULL, "", NULL, 0 },
-                                 {M64PLUGIN_AUDIO, "Audio", NULL, "", NULL, 0 },
-                                 {M64PLUGIN_INPUT, "Input", NULL, "", NULL, 0 },
-                                 {M64PLUGIN_RSP,   "RSP",   NULL, "", NULL, 0 } };
+plugin_map_node g_PluginMap[] = {{M64PLUGIN_GFX,       "Video",     NULL, "", NULL, 0 },
+                                 {M64PLUGIN_AUDIO,     "Audio",     NULL, "", NULL, 0 },
+                                 {M64PLUGIN_INPUT,     "Input",     NULL, "", NULL, 0 },
+                                 {M64PLUGIN_RSP,       "RSP",       NULL, "", NULL, 0 },
+                                 {M64PLUGIN_NETPLAY,   "Netplay",   NULL, "", NULL, 0 } };
 
 /* local functions */
 static m64p_error PluginLoadTry(const char *filepath, int MapIndex)
@@ -136,19 +138,21 @@ m64p_error PluginSearchLoad(m64p_handle ConfigUI)
     }
 
     /* try to load one of each type of plugin */
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < 5; i++)
     {
         m64p_plugin_type type = g_PluginMap[i].type;
         const char      *cmdline_path = NULL;
         const char      *config_var = NULL;
         int              use_dummy = 0;
+
         switch (type)
         {
-            case M64PLUGIN_RSP:    cmdline_path = g_RspPlugin;    config_var = "RspPlugin";   break;
-            case M64PLUGIN_GFX:    cmdline_path = g_GfxPlugin;    config_var = "VideoPlugin"; break;
-            case M64PLUGIN_AUDIO:  cmdline_path = g_AudioPlugin;  config_var = "AudioPlugin"; break;
-            case M64PLUGIN_INPUT:  cmdline_path = g_InputPlugin;  config_var = "InputPlugin"; break;
-            default:               cmdline_path = NULL;           config_var = "";
+            case M64PLUGIN_RSP:     cmdline_path = g_RspPlugin;     config_var = "RspPlugin";   break;
+            case M64PLUGIN_GFX:     cmdline_path = g_GfxPlugin;     config_var = "VideoPlugin"; break;
+            case M64PLUGIN_AUDIO:   cmdline_path = g_AudioPlugin;   config_var = "AudioPlugin"; break;
+            case M64PLUGIN_INPUT:   cmdline_path = g_InputPlugin;   config_var = "InputPlugin"; break;
+            case M64PLUGIN_NETPLAY: cmdline_path = g_NetplayPlugin; config_var = "NetplayPlugin"; break;
+            default:                cmdline_path = NULL;            config_var = "";
         }
         /* first search for a plugin matching what was given on the command line */
         if (cmdline_path != NULL)

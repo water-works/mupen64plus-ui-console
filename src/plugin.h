@@ -35,6 +35,7 @@ extern const char *g_GfxPlugin;        // graphics plugin specified at commandli
 extern const char *g_AudioPlugin;      // audio plugin specified at commandline (if any)
 extern const char *g_InputPlugin;      // input plugin specified at commandline (if any)
 extern const char *g_RspPlugin;        // rsp plugin specified at commandline (if any)
+extern const char *g_NetplayPlugin;    // netplay plugin specified at commandline (if any)
 
 typedef struct {
   m64p_plugin_type    type;
@@ -45,7 +46,7 @@ typedef struct {
   int                 libversion;
   } plugin_map_node;
 
-extern plugin_map_node g_PluginMap[4];
+extern plugin_map_node g_PluginMap[5];
 
 #endif /* #define PLUGIN_H */
 
